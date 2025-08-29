@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RoofCrafters Roofing, LLC - Interactive Analytics Dashboard</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2"></script>
+
+  <style>
+    /* Reset & Base Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --roofcrafters-red: #B91C1C;
+      --roofcrafters-white: #FFFFFF;
+      --text-dark: #1F2937;
+      --text-light: #6B7280;
+      --border-color: #E5E7EB;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+      --border-radius: 12px;
+      --transition: all 0.3s ease;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
+      color: var(--text-dark);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      background: var(--roofcrafters-red);
+      color: white;
+      box-shadow: var(--shadow-sm);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .company-info h1 {
+      color: white;
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    .company-info p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.9rem;
+    }
+
+    .dashboard-title {
+      text-align: right;
+    }
+
+    .dashboard-title h2 {
+      color: white;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+
+    .dashboard-title p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.9rem;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      flex: 1;
+    }
+
+    /* Filters */
+    .filters-section {
+      background: var(--roofcrafters-white);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-md);
+    }
+
+    .filters-title {
+      color: var(--text-dark);
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .filters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .filter-label {
+      font-weight: 500;
+      color: var(--text-dark);
+      font-size: 0.9rem;
+    }
+
+    .filter-select, .filter-button {
+      padding: 0.75rem;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--roofcrafters-white);
+      color: var(--text-dark);
+      font-size: 0.9rem;
+      transition: var(--transition);
+    }
+
+    .filter-select:focus, .filter-button:hover {
+      border-color: var(--roofcrafters-red);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.1);
+    }
+
+    .filter-button {
+      background: var(--roofcrafters-red);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .filter-button:hover {
+      background: #DC2626;
+      transform: translateY(-1px);
+    }
+
+    /* Metrics */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .metric-card {
+      background: var(--roofcrafters-white);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-md);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .metric-card.total-card {
+      background: linear-gradient(135deg, #F8FAFC 0%, #EBF4FF 100%);
+      border: 2px solid var(--roofcrafters-red);
+      box-shadow: 0 8px 25px rgba(185, 28, 28, 0.15);
+    }
+
+    .metric-card.total-card .metric-title {
+      font-weight: 700;
+      color: var(--roofcrafters-red);
+    }
+
+    .metric-card.total-card .metric-value {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: var(--roofcrafters-red);
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, var(--roofcrafters-red) 0%, var(--roofcrafters-red) 100%);
+    }
+
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .metric-title {
+      color: var(--text-light);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .metric-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: white;
+    }
+
+    .metric-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-change {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .change-positive { color: #10B981; }
+    .change-negative { color: #EF4444; }
+    .change-neutral { color: var(--text-light); }
+
+    /* Charts */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .chart-card {
+      background: var(--roofcrafters-white);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-md);
+      transition: var(--transition);
+    }
+
+    .chart-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .chart-title {
+      color: var(--text-dark);
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .chart-subtitle {
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 380px;
+    }
+
+    /* Insights & Recommendations */
+    .insights-section, .recommendations-section {
+      background: var(--roofcrafters-white);
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      color: var(--text-dark);
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .insight-card {
+      padding: 1.5rem;
+      border-radius: 8px;
+      border-left: 4px solid;
+    }
+
+    .insight-critical {
+      background: #FEF2F2;
+      border-left-color: var(--roofcrafters-red);
+    }
+
+    .insight-positive {
+      background: #ECFDF5;
+      border-left-color: #10B981;
+    }
+
+    .insight-warning {
+      background: #FFFBEB;
+      border-left-color: #F59E0B;
+    }
+
+    .insight-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    .insight-critical .insight-title { color: #991B1B; }
+    .insight-positive .insight-title { color: #065F46; }
+    .insight-warning .insight-title { color: #92400E; }
+
+    .insight-text {
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .insight-critical .insight-text { color: #7F1D1D; }
+    .insight-positive .insight-text { color: #064E3B; }
+    .insight-warning .insight-text { color: #78350F; }
+
+    /* Recommendations */
+    .recommendations-section ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+    }
+
+    .recommendations-section li {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #E5E7EB;
+      color: var(--text-dark);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      position: relative;
+      padding-left: 1.5rem;
+    }
+
+    .recommendations-section li:last-child {
+      border-bottom: none;
+    }
+
+    .recommendations-section li::before {
+      content: '•';
+      color: var(--roofcrafters-red);
+      font-size: 1.4rem;
+      position: absolute;
+      left: 0;
+      top: 0.2rem;
+    }
+
+    /* Footer */
+    .footer {
+      background: #1F2937;
+      color: white;
+      text-align: center;
+      padding: 2rem 0;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
+
+      .dashboard-title {
+        text-align: center;
+      }
+
+      .container {
+        padding: 1rem;
+      }
+
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-container {
+        height: 300px;
+      }
+
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header" role="banner">
+    <div class="header-content">
+      <div class="company-info">
+        <h1>RoofCrafters Roofing, LLC</h1>
+        <p>Core Sales Performance Metrics</p>  <!-- Updated text -->
+      </div>
+      <div class="dashboard-title">
+        <h2>Interactive Analytics Dashboard</h2>
+        <p>July - August 2025 Performance Analysis</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" id="mainContent">
+    <!-- Filters -->
+    <section class="filters-section" aria-labelledby="filters-title">
+      <div class="filters-title" id="filters-title">
+        🔍 Dashboard Filters & Controls
+      </div>
+      <div class="filters-grid">
+        <div class="filter-group">
+          <label for="metricFocus" class="filter-label">Metric Focus</label>
+          <select class="filter-select" id="metricFocus">
+            <option value="all">All Metrics</option>
+            <option value="leads">Leads Performance</option>
+            <option value="profit">Profit Analysis</option>
+            <option value="geographic">Geographic Analysis</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Metrics -->
+    <section class="metrics-grid" id="metricsGrid" aria-label="Key Performance Metrics">
+      <div class="loading">Loading metrics...</div>
+    </section>
+
+    <!-- Charts -->
+    <section class="charts-grid" id="chartsGrid" aria-label="Performance Charts">
+      <div class="loading">Loading charts...</div>
+    </section>
+
+    <!-- Insights -->
+    <section class="insights-section" aria-labelledby="insights-title">
+      <div class="section-title" id="insights-title">💡 Key Performance Insights</div>
+      <div class="insights-grid" id="insightsGrid">
+        <div class="loading">Loading insights...</div>
+      </div>
+    </section>
+
+    <!-- Recommendations -->
+    <section class="recommendations-section" aria-labelledby="recommendations-title">
+      <div class="section-title" id="recommendations-title">📋 Strategic Recommendations</div>
+      <ul id="recommendationsContent">
+        <li>Loading recommendations...</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer" role="contentinfo">
+    <div class="footer-content">
+      <p>&copy; 2025 RoofCrafters Roofing, LLC. All rights reserved.</p>
+      <p>Dashboard generated on <span id="currentDate"></span> | Data Period: July - August 2025</p>
+    </div>
+  </footer>
+
+  <script>
+    // Dashboard Data
+    const dashboardData = {
+      close_rate_by_state: [
+        { state: "FL", july_closed: 4, august_closed: 2, rate_change: -0.5 },
+        { state: "GA", july_closed: 15, august_closed: 20, rate_change: 0.33 },
+        { state: "SC", july_closed: 27, august_closed: 18, rate_change: -0.33 }
+      ],
+      profit_ratio_by_state: [
+        { state: "FL", july_profit: 590.11, august_profit: 1264.48, rate_change: 1.14 },
+        { state: "GA", july_profit: 4048.83, august_profit: 19521.8, rate_change: 3.82 },
+        { state: "SC", july_profit: 40544, august_profit: 7314.17, rate_change: -0.82 }
+      ],
+      leads_by_city_top10: [
+        { city: "Beaufort", july_leads: 26, august_leads: 27, rate_change: 0.0385 },
+        { city: "Bluffton", july_leads: 26, august_leads: 22, rate_change: -0.154 },
+        { city: "Savannah", july_leads: 18, august_leads: 43, rate_change: 1.389 },
+        { city: "Brunswick", july_leads: 10, august_leads: 22, rate_change: 1.2 },
+        { city: "Jacksonville", july_leads: 10, august_leads: 11, rate_change: 0.1 },
+        { city: "St. Simons Island", july_leads: 9, august_leads: 4, rate_change: -0.556 },
+        { city: "Hinesville", july_leads: 8, august_leads: 7, rate_change: -0.125 },
+        { city: "Hilton Head Island", july_leads: 6, august_leads: 27, rate_change: 3.5 },
+        { city: "Pooler", july_leads: 5, august_leads: 4, rate_change: -0.2 },
+        { city: "Tampa", july_leads: 5, august_leads: 1, rate_change: -0.8 }
+      ],
+      closed_leads_by_city_top10: [
+        { city: "Bluffton", july_closed: 13, august_closed: 5, rate_change: -0.615 },
+        { city: "Beaufort", july_closed: 7, august_closed: 7, rate_change: 0 },
+        { city: "Hilton Head Island", july_closed: 5, august_closed: 5, rate_change: 0 },
+        { city: "Savannah", july_closed: 3, august_closed: 9, rate_change: 2.0 },
+        { city: "Brunswick", july_closed: 2, august_closed: 3, rate_change: 0.5 },
+        { city: "Hinesville", july_closed: 2, august_closed: 0, rate_change: -1.0 },
+        { city: "Pooler", july_closed: 2, august_closed: 1, rate_change: -0.5 },
+        { city: "St. Simons Island", july_closed: 2, august_closed: 2, rate_change: 0 },
+        { city: "Townsend", july_closed: 2, august_closed: 1, rate_change: -0.5 },
+        { city: "Fripp Island", july_closed: 1, august_closed: 0, rate_change: -1.0 }
+      ],
+      summary: {
+        july_total_closed: 46,
+        august_total_closed: 40,
+        july_total_profit: 45182.94,
+        august_total_profit: 28100.45,
+        closed_leads_change: -6,
+        profit_change: -17082.49
+      }
+    };
+
+    let charts = {};
+
+    // Initialize Dashboard
+    function initializeDashboard() {
+      document.getElementById('currentDate').textContent = new Date().toLocaleDateString();
+      renderMetrics();
+      renderCharts();
+      renderInsights();
+      renderRecommendations();
+      setupEventListeners();
+    }
+
+    // Event Listeners
+    function setupEventListeners() {
+      document.getElementById('metricFocus').addEventListener('change', updateDashboard);
+    }
+
+    // Render Metrics
+    function renderMetrics() {
+      const metricsGrid = document.getElementById('metricsGrid');
+      const summary = dashboardData.summary;
+
+      const metrics = [
+        { title: 'Total Closed Leads', value: (summary.july_total_closed + summary.august_total_closed), change: summary.closed_leads_change, icon: '👥', iconBg: '#3B82F6' },
+        { title: 'July Closed Leads', value: summary.july_total_closed, change: 0, icon: '📅', iconBg: '#3B82F6' },
+        { title: 'August Closed Leads', value: summary.august_total_closed, change: summary.closed_leads_change, icon: '📅', iconBg: '#EF4444' },
+        { title: 'Total Profit', value: `$${(summary.july_total_profit + summary.august_total_profit).toLocaleString()}`, change: summary.profit_change, icon: '💰', iconBg: '#10B981' },
+        { title: 'July Profit', value: `$${summary.july_total_profit.toLocaleString()}`, change: 0, icon: '💵', iconBg: '#3B82F6' },
+        { title: 'August Profit', value: `$${summary.august_total_profit.toLocaleString()}`, change: summary.profit_change, icon: '💵', iconBg: '#EF4444' }
+      ];
+
+      metricsGrid.innerHTML = metrics.map((m, i) => {
+        const isTotal = i === 0 || i === 3;
+        const changeText = m.change === 0 ? 'No change' : `${m.change > 0 ? '+' : ''}${m.change} vs July`;
+        const arrow = m.change > 0 ? '↗️' : m.change < 0 ? '↘️' : '➡️';
+        const changeClass = m.change > 0 ? 'change-positive' : m.change < 0 ? 'change-negative' : 'change-neutral';
+
+        return `
+          <div class="metric-card ${isTotal ? 'total-card' : ''}">
+            <div class="metric-header">
+              <div class="metric-title">${m.title}</div>
+              <div class="metric-icon" style="background:${m.iconBg}">${m.icon}</div>
+            </div>
+            <div class="metric-value">${m.value}</div>
+            <div class="metric-change ${changeClass}">
+              <span>${arrow}</span> ${changeText}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render Charts
+    function renderCharts() {
+      const chartsGrid = document.getElementById('chartsGrid');
+      chartsGrid.innerHTML = `
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Closed Leads by State</div>
+            <div class="chart-subtitle">July vs August comparison</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="closedLeadsChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Profit by State</div>
+            <div class="chart-subtitle">Revenue comparison across states</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="profitChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Top Cities - Lead Generation</div>
+            <div class="chart-subtitle">Best performing cities for lead volume</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="cityLeadsChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Top Cities - Closed Leads</div>
+            <div class="chart-subtitle">Best performing cities for conversions</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="cityClosedChart"></canvas>
+          </div>
+        </div>
+      `;
+
+      setTimeout(() => {
+        createClosedLeadsChart();
+        createProfitChart();
+        createCityLeadsChart();
+        createCityClosedChart();
+      }, 100);
+    }
+
+    function createClosedLeadsChart() {
+      const ctx = document.getElementById('closedLeadsChart').getContext('2d');
+      const data = dashboardData.close_rate_by_state;
+      charts.closedLeads = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.map(d => d.state),
+          datasets: [
+            { label: 'July 2025', data: data.map(d => d.july_closed), backgroundColor: '#3B82F6' },
+            { label: 'August 2025', data: data.map(d => d.august_closed), backgroundColor: '#EF4444' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                afterLabel: (ctx) => {
+                  const d = data[ctx.dataIndex];
+                  const pct = ((d.august_closed - d.july_closed) / d.july_closed * 100).toFixed(1);
+                  return `Change: ${pct > 0 ? '+' : ''}${pct}%`;
+                }
+              }
+            }
+          },
+          scales: { y: { beginAtZero: true, title: { display: true, text: 'Closed Leads' } } }
+        }
+      });
+    }
+
+    function createProfitChart() {
+      const ctx = document.getElementById('profitChart').getContext('2d');
+      const data = dashboardData.profit_ratio_by_state;
+      charts.profit = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.map(d => d.state),
+          datasets: [
+            { label: 'July 2025', data: data.map(d => d.july_profit), backgroundColor: '#10B981' },
+            { label: 'August 2025', data: data.map(d => d.august_profit), backgroundColor: '#F59E0B' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`,
+                afterLabel: (ctx) => {
+                  const d = data[ctx.dataIndex];
+                  const pct = (d.rate_change * 100).toFixed(1);
+                  return `Change: ${pct > 0 ? '+' : ''}${pct}%`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Profit ($)' },
+              ticks: { callback: val => '$' + val.toLocaleString() }
+            }
+          }
+        }
+      });
+    }
+
+    function createCityLeadsChart() {
+      const ctx = document.getElementById('cityLeadsChart').getContext('2d');
+      const data = dashboardData.leads_by_city_top10.slice(0, 6);
+      charts.cityLeads = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.map(d => d.city),
+          datasets: [
+            { label: 'July 2025', data: data.map(d => d.july_leads), borderColor: '#3B82F6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.4 },
+            { label: 'August 2025', data: data.map(d => d.august_leads), borderColor: '#EF4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.4 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top' } },
+          scales: { y: { beginAtZero: true, title: { display: true, text: 'Total Leads' } } }
+        }
+      });
+    }
+
+    function createCityClosedChart() {
+      const ctx = document.getElementById('cityClosedChart').getContext('2d');
+      const data = dashboardData.closed_leads_by_city_top10.slice(0, 6);
+      charts.cityClosed = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: data.map(d => d.city),
+          datasets: [{
+            data: data.map(d => d.july_closed),
+            backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'],
+            borderWidth: 2,
+            borderColor: '#FFFFFF'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right' },
+            tooltip: {
+              callbacks: {
+                afterLabel: (ctx) => {
+                  const d = data[ctx.dataIndex];
+                  return `August: ${d.august_closed} closed`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Render Insights
+    function renderInsights() {
+      const insightsGrid = document.getElementById('insightsGrid');
+      const insights = [
+        { type: 'critical', title: '🚨 Overall Performance Decline', text: 'Total closed leads decreased by 6 from July (46) to August (40), representing a 13% decline. This trend requires immediate investigation.' },
+        { type: 'critical', title: '💸 Significant Profit Drop', text: 'Total profit fell by $17,082 (-37.8%) from July to August. South Carolina saw the largest decline from $40,544 to $7,314.' },
+        { type: 'positive', title: '📈 Georgia Growth Story', text: 'Georgia showed strong performance with closed leads increasing from 15 to 20 (+33%) and profit growing from $4,049 to $19,522 (+382%)' },
+        { type: 'warning', title: '🎯 Florida Needs Attention', text: 'Florida closed leads dropped from 4 to 2 (-50%), though profit increased. Market penetration remains low compared to other states.' },
+        { type: 'positive', title: '🏙️ Savannah Market Expansion', text: 'Savannah showed exceptional growth with closed leads tripling from 3 to 9 (+200%) and total leads increasing from 18 to 43.' },
+        { type: 'warning', title: '📉 Bluffton Market Decline', text: 'Bluffton, previously a strong market, saw closed leads drop from 13 to 5 (-62%). This market requires strategic review.' }
+      ];
+
+      insightsGrid.innerHTML = insights.map(i => `
+        <div class="insight-card insight-${i.type}">
+          <div class="insight-title">${i.title}</div>
+          <div class="insight-text">${i.text}</div>
+        </div>
+      `).join('');
+    }
+
+    // Render Recommendations (as clean bullet list)
+    function renderRecommendations() {
+      const recs = document.getElementById('recommendationsContent');
+      const recommendations = [
+        'Conduct immediate analysis of South Carolina market decline. Investigate factors causing the 33% drop in closed leads and 82% profit decrease.',
+        'Replicate Georgia success strategies across other markets. Analyze what drove the 382% profit increase and 33% lead conversion improvement.',
+        'Develop targeted marketing campaign for Savannah market to capitalize on the 200% growth in closed leads and maintain momentum.',
+        'Review and revitalize Bluffton market strategy. Investigate causes of 62% decline in closed leads and develop recovery plan.',
+        'Expand Florida market presence. While profit per lead is good, overall volume remains low compared to GA and SC markets.',
+        'Implement monthly performance tracking dashboard to identify trends early and enable proactive market adjustments.'
+      ];
+
+      recs.innerHTML = recommendations.map(r => `<li>${r}</li>`).join('');
+    }
+
+    // Update Dashboard
+    function updateDashboard() {
+      const metricFocus = document.getElementById('metricFocus').value;
+
+      const chartCards = document.querySelectorAll('.chart-card');
+      chartCards.forEach(card => (card.style.display = 'block'));
+
+      if (metricFocus === 'leads') {
+        document.querySelectorAll('.chart-card:nth-child(2)').forEach(c => c.style.display = 'none');
+      } else if (metricFocus === 'profit') {
+        document.querySelectorAll('.chart-card:nth-child(1), .chart-card:nth-child(3), .chart-card:nth-child(4)').forEach(c => c.style.display = 'none');
+      } else if (metricFocus === 'geographic') {
+        document.querySelectorAll('.chart-card:nth-child(2)').forEach(c => c.style.display = 'none');
+      }
+    }
+
+    // Init on Load
+    document.addEventListener('DOMContentLoaded', initializeDashboard);
+  </script>
+</body>
+</html>
