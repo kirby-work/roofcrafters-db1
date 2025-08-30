@@ -96,6 +96,26 @@
       flex: 1;
     }
 
+    /* Tabs */
+    .tabs {
+      display: flex;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .tab {
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--text-light);
+      border-bottom: 3px solid transparent;
+      transition: var(--transition);
+    }
+    .tab.active {
+      color: var(--roofcrafters-red);
+      border-bottom: 3px solid var(--roofcrafters-red);
+      font-weight: 600;
+    }
+
     /* Filters */
     .filters-section {
       background: var(--roofcrafters-white);
@@ -361,7 +381,6 @@
     .recommendations-section ul {
       list-style: none;
       padding-left: 0;
-      margin: 0;
     }
 
     .recommendations-section li {
@@ -402,6 +421,14 @@
       padding: 0 2rem;
     }
 
+    /* Tab Content */
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .header-content {
@@ -437,7 +464,7 @@
     <div class="header-content">
       <div class="company-info">
         <h1>RoofCrafters Roofing, LLC</h1>
-        <p>Core Sales Performance Metrics</p>  <!-- Updated text -->
+        <p>Core Sales Performance Metrics</p>
       </div>
       <div class="dashboard-title">
         <h2>Interactive Analytics Dashboard</h2>
@@ -447,49 +474,134 @@
   </header>
 
   <main class="container" id="mainContent">
-    <!-- Filters -->
-    <section class="filters-section" aria-labelledby="filters-title">
-      <div class="filters-title" id="filters-title">
-        🔍 Dashboard Filters & Controls
-      </div>
-      <div class="filters-grid">
-        <div class="filter-group">
-          <label for="metricFocus" class="filter-label">Metric Focus</label>
-          <select class="filter-select" id="metricFocus">
-            <option value="all">All Metrics</option>
-            <option value="leads">Leads Performance</option>
-            <option value="profit">Profit Analysis</option>
-            <option value="geographic">Geographic Analysis</option>
-          </select>
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" onclick="openTab(event, 'main')">Main Dashboard</div>
+      <div class="tab" onclick="openTab(event, 'commissions')">Sales Rep Commissions</div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="main" class="tab-content active">
+      <!-- Filters -->
+      <section class="filters-section" aria-labelledby="filters-title">
+        <div class="filters-title" id="filters-title">
+          🔍 Dashboard Filters & Controls
         </div>
-      </div>
-    </section>
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label for="metricFocus" class="filter-label">Metric Focus</label>
+            <select class="filter-select" id="metricFocus">
+              <option value="all">All Metrics</option>
+              <option value="leads">Leads Performance</option>
+              <option value="profit">Profit Analysis</option>
+              <option value="geographic">Geographic Analysis</option>
+            </select>
+          </div>
+        </div>
+      </section>
 
-    <!-- Key Metrics -->
-    <section class="metrics-grid" id="metricsGrid" aria-label="Key Performance Metrics">
-      <div class="loading">Loading metrics...</div>
-    </section>
+      <!-- Key Metrics -->
+      <section class="metrics-grid" id="metricsGrid" aria-label="Key Performance Metrics">
+        <div class="loading">Loading metrics...</div>
+      </section>
 
-    <!-- Charts -->
-    <section class="charts-grid" id="chartsGrid" aria-label="Performance Charts">
-      <div class="loading">Loading charts...</div>
-    </section>
+      <!-- Charts -->
+      <section class="charts-grid" id="chartsGrid" aria-label="Performance Charts">
+        <div class="loading">Loading charts...</div>
+      </section>
 
-    <!-- Insights -->
-    <section class="insights-section" aria-labelledby="insights-title">
-      <div class="section-title" id="insights-title">💡 Key Performance Insights</div>
-      <div class="insights-grid" id="insightsGrid">
-        <div class="loading">Loading insights...</div>
-      </div>
-    </section>
+      <!-- Insights -->
+      <section class="insights-section" aria-labelledby="insights-title">
+        <div class="section-title" id="insights-title">💡 Key Performance Insights</div>
+        <div class="insights-grid" id="insightsGrid">
+          <div class="loading">Loading insights...</div>
+        </div>
+      </section>
 
-    <!-- Recommendations -->
-    <section class="recommendations-section" aria-labelledby="recommendations-title">
-      <div class="section-title" id="recommendations-title">📋 Strategic Recommendations</div>
-      <ul id="recommendationsContent">
-        <li>Loading recommendations...</li>
-      </ul>
-    </section>
+      <!-- Recommendations -->
+      <section class="recommendations-section" aria-labelledby="recommendations-title">
+        <div class="section-title" id="recommendations-title">📋 Strategic Recommendations</div>
+        <ul id="recommendationsContent">
+          <li>Loading recommendations...</li>
+        </ul>
+      </section>
+    </div>
+
+    <!-- Sales Rep Commissions Tab -->
+    <div id="commissions" class="tab-content">
+      <section class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Total Commissions by Rep</div>
+            <div class="chart-subtitle">July vs August 2025</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="totalCommissionsChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Average Commission per Rep</div>
+            <div class="chart-subtitle">Deal value consistency</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="avgCommissionsChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Commission Growth Rate</div>
+            <div class="chart-subtitle">Month-over-month % change</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="growthChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Closed Jobs per Rep</div>
+            <div class="chart-subtitle">Deal volume comparison</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="closedJobsChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="insights-section">
+        <div class="section-title">💡 Key Commission Insights</div>
+        <div class="insights-grid" id="commissionInsights">
+          <div class="insight-card insight-positive">
+            <div class="insight-title">📈 ED: Highest Growth (+764%)</div>
+            <div class="insight-text">ED’s commission grew by 764% with 3x more closed jobs. A rising star — investigate strategy.</div>
+          </div>
+          <div class="insight-card insight-positive">
+            <div class="insight-title">📈 PB: Doubled Average Deal Value</div>
+            <div class="insight-text">PB doubled average commission ($423 → $849) despite fewer deals — improved deal quality.</div>
+          </div>
+          <div class="insight-card insight-critical">
+            <div class="insight-title">📉 DH: High Volume, But Declining</div>
+            <div class="insight-text">DH’s commissions dropped from $17K to $5.4K with only 5 closed jobs in August — red flag.</div>
+          </div>
+          <div class="insight-card insight-warning">
+            <div class="insight-title">⚠️ AM: Top Earner, But Efficiency Down</div>
+            <div class="insight-text">AM earned $21.9K (highest), but only 15 deals → large deals, but fewer than others.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="recommendations-section">
+        <div class="section-title">📋 Commission Recommendations</div>
+        <ul id="commissionRecommendations">
+          <li>Interview ED and PB to understand their strategies and share with the team.</li>
+          <li>Conduct performance review with DH — despite past success, current output is low.</li>
+          <li>Coach MO and WG on improving deal volume and value — both show negative growth.</li>
+          <li>Recognize AM as top performer, but encourage higher deal volume to maximize impact.</li>
+          <li>Track closed jobs + average commission together monthly to balance volume and value.</li>
+          <li>Consider incentive bonus for reps who grow both volume and average deal size.</li>
+        </ul>
+      </section>
+    </div>
   </main>
 
   <footer class="footer" role="contentinfo">
@@ -546,7 +658,35 @@
       }
     };
 
+    // Commission Data (cleaned from CSV)
+    const commissionData = {
+      reps: ["AM", "BM", "DH", "ED", "MO", "PB", "WG"],
+      totalJuly: [9302.26, 72.00, 17326.06, 44.62, 5206.92, 1692.13, 2373.22],
+      totalAugust: [21913.20, 1381.13, 5435.97, 1156.93, 3118.14, 1699.19, 2786.38],
+      avgJuly: [930.23, 72.00, 753.31, 44.62, 743.85, 423.03, 791.07],
+      avgAugust: [1460.88, 345.28, 1087.19, 385.64, 346.46, 849.60, 557.28],
+      growth: [57.05, 379.56, 44.32, 764.28, -53.42, 100.84, -29.55],
+      jobsJuly: [10, 1, 23, 1, 7, 4, 3],
+      jobsAugust: [15, 4, 5, 3, 9, 2, 5]
+    };
+
     let charts = {};
+
+    // Tab Switching
+    function openTab(evt, tabName) {
+      const tabs = document.getElementsByClassName("tab");
+      const contents = document.getElementsByClassName("tab-content");
+      for (let i = 0; i < tabs.length; i++) {
+        tabs[i].classList.remove("active");
+        contents[i].classList.remove("active");
+      }
+      document.getElementById(tabName).classList.add("active");
+      evt.currentTarget.classList.add("active");
+
+      if (tabName === "commissions" && !charts.totalCommissions) {
+        renderCommissionCharts();
+      }
+    }
 
     // Initialize Dashboard
     function initializeDashboard() {
@@ -569,25 +709,25 @@
       const summary = dashboardData.summary;
 
       const metrics = [
-        { title: 'Total Closed Leads', value: (summary.july_total_closed + summary.august_total_closed), change: summary.closed_leads_change, icon: '👥', iconBg: '#3B82F6' },
-        { title: 'July Closed Leads', value: summary.july_total_closed, change: 0, icon: '📅', iconBg: '#3B82F6' },
-        { title: 'August Closed Leads', value: summary.august_total_closed, change: summary.closed_leads_change, icon: '📅', iconBg: '#EF4444' },
-        { title: 'Total Profit', value: `$${(summary.july_total_profit + summary.august_total_profit).toLocaleString()}`, change: summary.profit_change, icon: '💰', iconBg: '#10B981' },
-        { title: 'July Profit', value: `$${summary.july_total_profit.toLocaleString()}`, change: 0, icon: '💵', iconBg: '#3B82F6' },
-        { title: 'August Profit', value: `$${summary.august_total_profit.toLocaleString()}`, change: summary.profit_change, icon: '💵', iconBg: '#EF4444' }
+        { title: 'Total Closed Leads', value: (summary.july_total_closed + summary.august_total_closed), change: summary.closed_leads_change },
+        { title: 'July Closed Leads', value: summary.july_total_closed, change: 0 },
+        { title: 'August Closed Leads', value: summary.august_total_closed, change: summary.closed_leads_change },
+        { title: 'Total Profit', value: `$${(summary.july_total_profit + summary.august_total_profit).toLocaleString()}`, change: summary.profit_change },
+        { title: 'July Profit', value: `$${summary.july_total_profit.toLocaleString()}`, change: 0 },
+        { title: 'August Profit', value: `$${summary.august_total_profit.toLocaleString()}`, change: summary.profit_change }
       ];
 
-      metricsGrid.innerHTML = metrics.map((m, i) => {
-        const isTotal = i === 0 || i === 3;
+      metricsGrid.innerHTML = metrics.map(m => {
         const changeText = m.change === 0 ? 'No change' : `${m.change > 0 ? '+' : ''}${m.change} vs July`;
         const arrow = m.change > 0 ? '↗️' : m.change < 0 ? '↘️' : '➡️';
         const changeClass = m.change > 0 ? 'change-positive' : m.change < 0 ? 'change-negative' : 'change-neutral';
+        const isTotal = ['Total Closed Leads', 'Total Profit'].includes(m.title);
 
         return `
           <div class="metric-card ${isTotal ? 'total-card' : ''}">
             <div class="metric-header">
               <div class="metric-title">${m.title}</div>
-              <div class="metric-icon" style="background:${m.iconBg}">${m.icon}</div>
+              <div class="metric-icon" style="background:#3B82F6">📊</div>
             </div>
             <div class="metric-value">${m.value}</div>
             <div class="metric-change ${changeClass}">
@@ -792,7 +932,7 @@
       `).join('');
     }
 
-    // Render Recommendations (as clean bullet list)
+    // Render Recommendations
     function renderRecommendations() {
       const recs = document.getElementById('recommendationsContent');
       const recommendations = [
@@ -821,6 +961,116 @@
       } else if (metricFocus === 'geographic') {
         document.querySelectorAll('.chart-card:nth-child(2)').forEach(c => c.style.display = 'none');
       }
+    }
+
+    // Commission Charts
+    function renderCommissionCharts() {
+      createTotalCommissionsChart();
+      createAvgCommissionsChart();
+      createGrowthChart();
+      createClosedJobsChart();
+    }
+
+    function createTotalCommissionsChart() {
+      const ctx = document.getElementById('totalCommissionsChart').getContext('2d');
+      charts.totalCommissions = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: commissionData.reps,
+          datasets: [
+            { label: 'July 2025', data: commissionData.totalJuly, backgroundColor: '#3B82F6' },
+            { label: 'August 2025', data: commissionData.totalAugust, backgroundColor: '#EF4444' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Total Commission ($)' },
+              ticks: { callback: val => '$' + val.toLocaleString() }
+            }
+          }
+        }
+      });
+    }
+
+    function createAvgCommissionsChart() {
+      const ctx = document.getElementById('avgCommissionsChart').getContext('2d');
+      charts.avgCommissions = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: commissionData.reps,
+          datasets: [
+            { label: 'July 2025', data: commissionData.avgJuly, borderColor: '#3B82F6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.4 },
+            { label: 'August 2025', data: commissionData.avgAugust, borderColor: '#EF4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.4 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Average Commission ($)' }
+            }
+          }
+        }
+      });
+    }
+
+    function createGrowthChart() {
+      const ctx = document.getElementById('growthChart').getContext('2d');
+      charts.growth = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: commissionData.reps,
+          datasets: [{
+            label: 'Growth Rate (%)',
+            data: commissionData.growth,
+            backgroundColor: (ctx) => {
+              const val = ctx.raw;
+              return val >= 0 ? '#10B981' : '#EF4444';
+            }
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              title: { display: true, text: 'Growth Rate (%)' },
+              ticks: { callback: val => val + '%' }
+            }
+          }
+        }
+      });
+    }
+
+    function createClosedJobsChart() {
+      const ctx = document.getElementById('closedJobsChart').getContext('2d');
+      charts.closedJobs = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: commissionData.reps,
+          datasets: [
+            { label: 'July 2025', data: commissionData.jobsJuly, backgroundColor: '#8B5CF6' },
+            { label: 'August 2025', data: commissionData.jobsAugust, backgroundColor: '#F59E0B' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Closed Jobs' },
+              ticks: { stepSize: 1 }
+            }
+          }
+        }
+      });
     }
 
     // Init on Load
