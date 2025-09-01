@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RoofCrafters Roofing, LLC - Interactive Analytics Dashboard</title>
+  <!-- Reliable Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --roofcrafters-red: #B91C1C;
+      --roofcrafters-white: #FFFFFF;
+      --text-dark: #1F2937;
+      --text-light: #6B7280;
+      --border-color: #E5E7EB;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+      --border-radius: 12px;
+      --transition: all 0.3s ease;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
+      color: var(--text-dark);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      background: var(--roofcrafters-red);
+      color: white;
+      box-shadow: var(--shadow-sm);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .company-info h1 {
+      color: white;
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+    .company-info p {
+      color: rgba(255,255,255,0.8);
+      font-size: 0.9rem;
+    }
+    .dashboard-title {
+      text-align: right;
+    }
+    .dashboard-title h2 {
+      color: white;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+    .dashboard-title p {
+      color: rgba(255,255,255,0.8);
+      font-size: 0.9rem;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      flex: 1;
+    }
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .metric-card {
+      background: var(--roofcrafters-white);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-md);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+    }
+    .metric-card.total-card {
+      background: linear-gradient(135deg, #F8FAFC 0%, #EBF4FF 100%);
+      border: 2px solid var(--roofcrafters-red);
+      box-shadow: 0 8px 25px rgba(185,28,28,0.15);
+    }
+    .metric-card.total-card .metric-title {
+      font-weight: 700;
+      color: #1F2937; /* Black */
+    }
+    .metric-card.total-card .metric-value {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: #1F2937; /* Black */
+    }
+    .metric-card.total-card .metric-change {
+      color: #1F2937; /* Black */
+    }
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, var(--roofcrafters-red) 0%, var(--roofcrafters-red) 100%);
+    }
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .metric-title {
+      color: var(--text-light);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .metric-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: white;
+    }
+    .metric-value {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 0.5rem;
+    }
+    .metric-change {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .change-positive { color: #10B981; }
+    .change-negative { color: #EF4444; }
+    .change-neutral { color: var(--text-light); }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    .chart-card {
+      background: var(--roofcrafters-white);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-md);
+      transition: var(--transition);
+    }
+    .chart-header {
+      margin-bottom: 1.5rem;
+    }
+    .chart-title {
+      color: var(--text-dark);
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .chart-subtitle {
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+    .chart-container {
+      position: relative;
+      height: 380px;
+    }
+
+    .insights-section {
+      background: var(--roofcrafters-white);
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 2rem;
+    }
+    .section-title {
+      color: var(--text-dark);
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .insight-card {
+      padding: 1.5rem;
+      border-radius: 8px;
+      border-left: 4px solid;
+    }
+    .insight-critical { background: #FEF2F2; border-left-color: var(--roofcrafters-red); }
+    .insight-positive { background: #ECFDF5; border-left-color: #10B981; }
+    .insight-warning { background: #FFFBEB; border-left-color: #F59E0B; }
+    .insight-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+    .insight-critical .insight-title { color: #991B1B; }
+    .insight-positive .insight-title { color: #065F46; }
+    .insight-warning .insight-title { color: #92400E; }
+    .insight-text {
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .footer {
+      background: #1F2937;
+      color: white;
+      text-align: center;
+      padding: 2rem 0;
+      margin-top: auto;
+    }
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      .metrics-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
+      .container {
+        padding: 1rem;
+      }
+      .chart-container {
+        height: 300px;
+      }
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+      .insights-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <div class="company-info">
+        <h1>RoofCrafters Roofing, LLC</h1>
+        <p>Interactive Analytics Dashboard</p>
+      </div>
+      <div class="dashboard-title">
+        <h2>Territory and Geographic Performance Metrics</h2>
+        <p>July - August 2025 Performance Analysis</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Key Metrics - 4 in one row -->
+    <section class="metrics-grid">
+      <div class="metric-card total-card">
+        <div class="metric-header">
+          <div class="metric-title">Leads per State (Jul)</div>
+          <div class="metric-icon" style="background:#3B82F6">📊</div>
+        </div>
+        <div class="metric-value">146</div>
+        <div class="metric-change change-neutral">Base month</div>
+      </div>
+      <div class="metric-card total-card">
+        <div class="metric-header">
+          <div class="metric-title">Leads per State (Aug)</div>
+          <div class="metric-icon" style="background:#3B82F6">📊</div>
+        </div>
+        <div class="metric-value">194</div>
+        <div class="metric-change change-positive">↗️ +33% vs July</div>
+      </div>
+
+      <div class="metric-card total-card">
+        <div class="metric-header">
+          <div class="metric-title">Appointments (Jul)</div>
+          <div class="metric-icon" style="background:#10B981">📅</div>
+        </div>
+        <div class="metric-value">136</div>
+        <div class="metric-change change-neutral">Base month</div>
+      </div>
+
+      <div class="metric-card total-card">
+        <div class="metric-header">
+          <div class="metric-title">Appointments (Aug)</div>
+          <div class="metric-icon" style="background:#10B981">📅</div>
+        </div>
+        <div class="metric-value">178</div>
+        <div class="metric-change change-positive">↗️ +31% vs July</div>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="charts-grid">
+      <!-- Leads per State (without Referrals) -->
+      <div class="chart-card" style="grid-column: span 2;">
+        <div class="chart-header">
+          <div class="chart-title">Leads per State (without Referrals)</div>
+          <div class="chart-subtitle">July vs August 2025</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="leadsPerStateChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Appointment per State (without Referrals) -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Appointments per State (without Referrals)</div>
+          <div class="chart-subtitle">July vs August 2025</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="appointmentsPerStateChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Closed Leads per State (without Referrals) -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Closed Leads per State (without Referrals)</div>
+          <div class="chart-subtitle">July vs August 2025</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="closedLeadsPerStateChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Cost per Appointment per State -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Cost per Appointment per State</div>
+          <div class="chart-subtitle">July vs August 2025</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="costPerAppointmentChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Cost per Acquisition / Cost per Closing per State -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Cost per Acquisition / Cost per Closing per State</div>
+          <div class="chart-subtitle">July vs August 2025</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="costPerAcquisitionChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Full-Width Insights -->
+    <section class="insights-section">
+      <div class="section-title">💡 Key Performance Insights</div>
+      <div class="insights-grid">
+        <div class="insight-card insight-positive">
+          <div class="insight-title">🚀 Georgia: Highest Growth in Appointments</div>
+          <div class="insight-text">Georgia's appointments increased from 50 to 94 (+88%) between July and August.</div>
+        </div>
+        <div class="insight-card insight-positive">
+          <div class="insight-title">🔥 South Carolina: Strong Lead Generation</div>
+          <div class="insight-text">SC generated 61 leads in August, a 32% increase from July's 46 leads.</div>
+        </div>
+        <div class="insight-card insight-warning">
+          <div class="insight-title">⚠️ Florida: Declining Conversion Rate</div>
+          <div class="insight-text">FL's closed leads dropped from 4 in July to just 1 in August, despite stable lead volume.</div>
+        </div>
+        <div class="insight-card insight-critical">
+          <div class="insight-title">📉 Florida: Cost per Appointment Increased Significantly</div>
+          <div class="insight-text">CPA rose from $8.76 to $14.37 in Florida, indicating reduced efficiency.</div>
+        </div>
+        <div class="insight-card insight-positive">
+          <div class="insight-title">📈 South Carolina: Most Efficient Market</div>
+          <div class="insight-text">SC achieved the lowest CPA at $3.74 in August, making it the most cost-effective market.</div>
+        </div>
+        <div class="insight-card insight-warning">
+          <div class="insight-title">⚠️ Overall Cost per Acquisition Increased</div>
+          <div class="insight-text">Total CPA rose from $236.10 to $478.88, suggesting higher acquisition costs across markets.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <p>&copy; 2025 RoofCrafters Roofing, LLC. All rights reserved.</p>
+      <p>Dashboard generated on <span id="currentDate"></span> | Data Period: July - August 2025</p>
+    </div>
+  </footer>
+
+  <script>
+    // Data from CSV
+    const leadsData = {
+      states: ["FL", "GA", "SC"],
+      july: [46, 54, 46],
+      august: [33, 100, 61]
+    };
+
+    const appointmentsData = {
+      states: ["FL", "GA", "SC"],
+      july: [41, 50, 45],
+      august: [25, 94, 59]
+    };
+
+    const closedLeadsData = {
+      states: ["FL", "GA", "SC"],
+      july: [4, 13, 16],
+      august: [1, 17, 12]
+    };
+
+    const costPerAppointmentData = {
+      states: ["FL", "GA", "SC"],
+      july: [8.76, 34.46, 4.90],
+      august: [14.37, 18.33, 3.74]
+    };
+
+    const costPerAcquisitionData = {
+      states: ["FL", "GA", "SC"],
+      july: [89.79, 132.53, 13.78],
+      august: [359.17, 101.34, 18.38]
+    };
+
+    let charts = {};
+
+    // Initialize Dashboard
+    function initializeDashboard() {
+      document.getElementById('currentDate').textContent = new Date().toLocaleDateString();
+      renderCharts();
+    }
+
+    function renderCharts() {
+      createLeadsPerStateChart();
+      createAppointmentsPerStateChart();
+      createClosedLeadsPerStateChart();
+      createCostPerAppointmentChart();
+      createCostPerAcquisitionChart();
+    }
+
+    function createLeadsPerStateChart() {
+      const ctx = document.getElementById('leadsPerStateChart').getContext('2d');
+      charts.leadsPerState = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: leadsData.states,
+          datasets: [
+            { label: 'July 2025', data: leadsData.july, backgroundColor: '#3B82F6' },
+            { label: 'August 2025', data: leadsData.august, backgroundColor: '#EF4444' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Lead Count' },
+              ticks: { stepSize: 10 }
+            }
+          }
+        }
+      });
+    }
+
+    function createAppointmentsPerStateChart() {
+      const ctx = document.getElementById('appointmentsPerStateChart').getContext('2d');
+      charts.appointmentsPerState = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: appointmentsData.states,
+          datasets: [
+            { label: 'July 2025', data: appointmentsData.july, backgroundColor: '#3B82F6' },
+            { label: 'August 2025', data: appointmentsData.august, backgroundColor: '#EF4444' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Appointment Count' },
+              ticks: { stepSize: 10 }
+            }
+          }
+        }
+      });
+    }
+
+    function createClosedLeadsPerStateChart() {
+      const ctx = document.getElementById('closedLeadsPerStateChart').getContext('2d');
+      charts.closedLeadsPerState = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: closedLeadsData.states,
+          datasets: [
+            { label: 'July 2025', data: closedLeadsData.july, backgroundColor: '#3B82F6' },
+            { label: 'August 2025', data: closedLeadsData.august, backgroundColor: '#EF4444' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Closed Leads' },
+              ticks: { stepSize: 1 }
+            }
+          }
+        }
+      });
+    }
+
+    function createCostPerAppointmentChart() {
+      const ctx = document.getElementById('costPerAppointmentChart').getContext('2d');
+      charts.costPerAppointment = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: costPerAppointmentData.states,
+          datasets: [
+            { 
+              label: 'July 2025', 
+              data: costPerAppointmentData.july, 
+              backgroundColor: '#3B82F6',
+              yAxisID: 'y'
+            },
+            { 
+              label: 'August 2025', 
+              data: costPerAppointmentData.august, 
+              backgroundColor: '#EF4444',
+              yAxisID: 'y'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Cost per Appointment ($)' },
+              ticks: { callback: val => '$' + val.toFixed(2) }
+            }
+          }
+        }
+      });
+    }
+
+    function createCostPerAcquisitionChart() {
+      const ctx = document.getElementById('costPerAcquisitionChart').getContext('2d');
+      charts.costPerAcquisition = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: costPerAcquisitionData.states,
+          datasets: [
+            { 
+              label: 'July 2025', 
+              data: costPerAcquisitionData.july, 
+              backgroundColor: '#3B82F6',
+              yAxisID: 'y'
+            },
+            { 
+              label: 'August 2025', 
+              data: costPerAcquisitionData.august, 
+              backgroundColor: '#EF4444',
+              yAxisID: 'y'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Cost per Acquisition ($)' },
+              ticks: { callback: val => '$' + val.toFixed(2) }
+            }
+          }
+        }
+      });
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', initializeDashboard);
+  </script>
+</body>
+</html>

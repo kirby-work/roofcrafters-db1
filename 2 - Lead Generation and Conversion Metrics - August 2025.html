@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RoofCrafters Roofing, LLC - Lead Generation and Conversion Metrics
+</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --roofcrafters-red: #B91C1C;
+      --roofcrafters-white: #FFFFFF;
+      --text-dark: #1F2937;
+      --text-light: #6B7280;
+      --border-color: #E5E7EB;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+      --border-radius: 12px;
+      --transition: all 0.3s ease;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
+      color: var(--text-dark);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      background: var(--roofcrafters-red);
+      color: white;
+      box-shadow: var(--shadow-sm);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .company-info h1 {
+      color: white;
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+    .company-info p {
+      color: rgba(255,255,255,0.8);
+      font-size: 0.9rem;
+    }
+    .dashboard-title {
+      text-align: right;
+    }
+    .dashboard-title h2 {
+      color: white;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+    .dashboard-title p {
+      color: rgba(255,255,255,0.8);
+      font-size: 0.9rem;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      flex: 1;
+    }
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .metric-card {
+      background: var(--roofcrafters-white);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-md);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+    }
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, var(--roofcrafters-red) 0%, var(--roofcrafters-red) 100%);
+    }
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .metric-title {
+      color: var(--text-light);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .metric-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: white;
+    }
+    .metric-value {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 0.5rem;
+    }
+    .metric-change {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .change-positive { color: #10B981; }
+    .change-negative { color: #EF4444; }
+    .change-neutral { color: var(--text-light); }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    .chart-card {
+      background: var(--roofcrafters-white);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-md);
+      transition: var(--transition);
+    }
+    .chart-header {
+      margin-bottom: 1.5rem;
+    }
+    .chart-title {
+      color: var(--text-dark);
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .chart-subtitle {
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+    .chart-container {
+      position: relative;
+      height: 380px;
+    }
+
+    .insights-section {
+      background: var(--roofcrafters-white);
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 2rem;
+    }
+    .section-title {
+      color: var(--text-dark);
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .insight-card {
+      padding: 1.5rem;
+      border-radius: 8px;
+      border-left: 4px solid;
+    }
+    .insight-critical { background: #FEF2F2; border-left-color: var(--roofcrafters-red); }
+    .insight-positive { background: #ECFDF5; border-left-color: #10B981; }
+    .insight-warning { background: #FFFBEB; border-left-color: #F59E0B; }
+    .insight-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+    .insight-critical .insight-title { color: #991B1B; }
+    .insight-positive .insight-title { color: #065F46; }
+    .insight-warning .insight-title { color: #92400E; }
+    .insight-text {
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .footer {
+      background: #1F2937;
+      color: white;
+      text-align: center;
+      padding: 2rem 0;
+      margin-top: auto;
+    }
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      .metrics-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
+      .container {
+        padding: 1rem;
+      }
+      .chart-container {
+        height: 300px;
+      }
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+      .insights-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <div class="company-info">
+        <h1>RoofCrafters Roofing, LLC</h1>
+        <p>Interactive Analytics Dashboard</p>
+      </div>
+      <div class="dashboard-title">
+        <h2>Lead Generation and Conversion Metrics</h2>
+        <p>July - August 2025 Performance Analysis</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Key Metrics - 6 in a 3x2 grid -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-header">
+          <div class="metric-title">Total Leads (July)</div>
+          <div class="metric-icon" style="background:#B91C1C">📊</div>
+        </div>
+        <div class="metric-value">177</div>
+        <div class="metric-change change-neutral">Base month</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-header">
+          <div class="metric-title">Total Appointments (July)</div>
+          <div class="metric-icon" style="background:#B91C1C">📅</div>
+        </div>
+        <div class="metric-value">162</div>
+        <div class="metric-change change-neutral">Base month</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-header">
+          <div class="metric-title">Total Closed Leads (July)</div>
+          <div class="metric-icon" style="background:#B91C1C">✅</div>
+        </div>
+        <div class="metric-value">47</div>
+        <div class="metric-change change-neutral">Base month</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-header">
+          <div class="metric-title">Total Leads (August)</div>
+          <div class="metric-icon" style="background:#B91C1C">📊</div>
+        </div>
+        <div class="metric-value">246</div>
+        <div class="metric-change change-positive">↗️ +39.0% vs July</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-header">
+          <div class="metric-title">Total Appointments (August)</div>
+          <div class="metric-icon" style="background:#B91C1C">📅</div>
+        </div>
+        <div class="metric-value">227</div>
+        <div class="metric-change change-positive">↗️ +40.1% vs July</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-header">
+          <div class="metric-title">Total Closed Leads (August)</div>
+          <div class="metric-icon" style="background:#B91C1C">✅</div>
+        </div>
+        <div class="metric-value">40</div>
+        <div class="metric-change change-negative">↘️ -14.9% vs July</div>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="charts-grid">
+      <!-- Lead Sources Count - MoM -->
+      <div class="chart-card" style="grid-column: span 2;">
+        <div class="chart-header">
+          <div class="chart-title">Lead Sources Count - MoM</div>
+          <div class="chart-subtitle">July vs August 2025</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="leadSourcesChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Appointments by State -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Appointments by State</div>
+          <div class="chart-subtitle">July vs August 2025</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="appointmentsByStateChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Closed Leads by State -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Closed Leads by State</div>
+          <div class="chart-subtitle">July vs August 2025</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="closedLeadsByStateChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Hubspot Appointments (Organic + Paid) -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Hubspot Appointments (Organic + Paid)</div>
+          <div class="chart-subtitle">July vs August 2025</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="hubspotAppointmentsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Hubspot Closed Leads (Organic + Paid) -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Hubspot Closed Leads (Organic + Paid)</div>
+          <div class="chart-subtitle">July vs August 2025</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="hubspotClosedLeadsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Lead-Appointment Ratio - MoM (Full Width) -->
+      <div class="chart-card" style="grid-column: span 2;">
+        <div class="chart-header">
+          <div class="chart-title">Lead-Appointment Ratio - MoM</div>
+          <div class="chart-subtitle">Conversion efficiency</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="leadAppointmentRatioChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Lead-Closed Ratio - MoM (Full Width) -->
+      <div class="chart-card" style="grid-column: span 2;">
+        <div class="chart-header">
+          <div class="chart-title">Lead-Closed Ratio - MoM</div>
+          <div class="chart-subtitle">Final conversion rate</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="leadClosedRatioChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Revenue per Lead Source (Half Width) -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Revenue per Lead Source</div>
+          <div class="chart-subtitle">July vs August 2025</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="revenuePerLeadSourceChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Profitability per Lead Source (Half Width) -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Profitability per Lead Source</div>
+          <div class="chart-subtitle">July vs August 2025</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="profitabilityPerLeadSourceChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Full-Width Insights -->
+    <section class="insights-section">
+      <div class="section-title">💡 Key Performance Insights</div>
+      <div class="insights-grid">
+        <div class="insight-card insight-positive">
+          <div class="insight-title">🚀 Google Search/Ratings: Strong Growth</div>
+          <div class="insight-text">Google Search/Ratings leads increased from 40 to 59 (+47.5%) and appointments rose from 39 to 57 (+46.2%). This is the strongest growth in lead generation.</div>
+        </div>
+        <div class="insight-card insight-positive">
+          <div class="insight-title">🔥 Previous Customer & Referral Partner: High Conversion</div>
+          <div class="insight-text">Previous Customer leads saw a significant increase from 18 to 52 (+188.9%) with a strong conversion rate of 15.38%. Referral Partner leads also showed high conversion at 16.67%.</div>
+        </div>
+        <div class="insight-card insight-critical">
+          <div class="insight-title">📉 Google Ad Words: Complete Drop-off</div>
+          <div class="insight-text">Google Ad Words generated 8 leads in July but dropped to 0 in August, indicating a complete failure of this marketing channel.</div>
+        </div>
+        <div class="insight-card insight-warning">
+          <div class="insight-title">⚠️ Facebook & Trucks: Inactive Channels</div>
+          <div class="insight-text">Facebook and Trucks (Wraps on trucks) generated no leads in August after producing some in July, suggesting these channels are not currently effective.</div>
+        </div>
+        <div class="insight-card insight-positive">
+          <div class="insight-title">📈 Personal Lead & BBB: Improving Conversion</div>
+          <div class="insight-text">Personal Lead conversion improved from 91.11% to 80.56% while BBB achieved 100% appointment conversion in August, showing strong performance from these sources.</div>
+        </div>
+        <div class="insight-card insight-warning">
+          <div class="insight-title">⚠️ HubSpot: Decreasing Conversion Efficiency</div>
+          <div class="insight-text">HubSpot's lead-to-appointment ratio decreased from 100% to 91.67% in August, which may indicate issues with lead quality or follow-up processes.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <p>&copy; 2025 RoofCrafters Roofing, LLC. All rights reserved.</p>
+      <p>Dashboard generated on <span id="currentDate"></span> | Data Period: July - August 2025</p>
+    </div>
+  </footer>
+
+  <script>
+    // Hardcoded data based on the provided CSV
+    const data = {
+      leadSourcesMoM: {
+        labels: ["Angie's List", "BBB", "Facebook", "GAF", "Google Ad Words", "Google Local Services", "Google Reviews", "Google Search/Ratings", "HubSpot", "Marvin Lead", "Next Door", "Personal Lead", "Previous Customer", "RC Website", "Referral", "REFERRAL PARTNER - Personal Leads", "Trucks (Wraps on trucks)", "Yelp"],
+        july: [3, 0, 1, 4, 8, 1, 3, 40, 18, 2, 0, 45, 18, 2, 6, 25, 1, 0],
+        august: [4, 3, 0, 4, 0, 4, 2, 59, 24, 3, 1, 36, 52, 1, 4, 48, 0, 1]
+      },
+      appointmentsByState: {
+        labels: ["FL", "GA", "SC"],
+        july: [42, 58, 62],
+        august: [27, 109, 91]
+      },
+      closedLeadsByState: {
+        labels: ["FL", "GA", "SC"],
+        july: [4, 16, 27],
+        august: [2, 20, 18]
+      },
+      hubspotAppointments: {
+        labels: ["FL", "GA", "SC"],
+        july: [4, 10, 6],
+        august: [15, 20, 7]
+      },
+      hubspotClosedLeads: {
+        labels: ["FL", "GA", "SC"],
+        july: [1, 0, 1],
+        august: [0, 2, 0]
+      },
+      leadAppointmentRatioMoM: {
+        labels: ["Angie's List", "BBB", "Facebook", "GAF", "Google Ad Words", "Google Local Services", "Google Reviews", "Google Search/Ratings", "HubSpot", "Marvin Lead", "Next Door", "Personal Lead", "Previous Customer", "RC Website", "Referral", "REFERRAL PARTNER - Personal Leads", "Trucks (Wraps on trucks)", "Yelp"],
+        july: [100.00, 0.00, 100.00, 100.00, 50.00, 100.00, 100.00, 97.50, 100.00, 100.00, 0.00, 91.11, 94.44, 100.00, 83.33, 84.00, 100.00, 0.00],
+        august: [75.00, 100.00, 0.00, 75.00, 0.00, 100.00, 100.00, 96.61, 91.67, 100.00, 100.00, 80.56, 94.23, 100.00, 100.00, 93.75, 0.00, 100.00]
+      },
+      leadClosedRatioMoM: {
+        labels: ["Angie's List", "BBB", "Facebook", "GAF", "Google Ad Words", "Google Local Services", "Google Reviews", "Google Search/Ratings", "HubSpot", "Marvin Lead", "Next Door", "Personal Lead", "Previous Customer", "RC Website", "Referral", "REFERRAL PARTNER - Personal Leads", "Trucks (Wraps on trucks)", "Yelp"],
+        july: [33.33, 0.00, 0.00, 100.00, 12.50, 0.00, 33.33, 17.50, 5.56, 0.00, 0.00, 28.89, 27.78, 0.00, 33.33, 48.00, 0.00, 0.00],
+        august: [0.00, 33.33, 0.00, 50.00, 0.00, 25.00, 0.00, 16.95, 0.00, 33.33, 0.00, 19.44, 15.38, 0.00, 50.00, 16.67, 0.00, 0.00]
+      },
+      revenuePerLeadSource: {
+        labels: ["Angie's List", "Facebook", "GAF", "Google Ad Words", "Google Local Services", "Google Reviews", "Google Search/Ratings", "HubSpot", "Marvin Lead", "Personal Lead", "Previous Customer", "RC Website", "Referral", "REFERRAL PARTNER - Personal Leads", "Trucks (Wraps on trucks)"],
+        july: [11254.39, 0, 8428.80, 3996.19, 0, 0, 68352.32, 14929.67, 0, 63170.64, 14536.71, 0, 3562.96, 90848.37, 0],
+        august: [0, 0, 1000.00, 0, 1250.02, 0, 80419.54, 0, 14680.68, 11732.88, 13314.06, 0, 4616.94, 30399.32, 0]
+      },
+      profitabilityPerLeadSource: {
+        labels: ["Angie's List", "Facebook", "GAF", "Google Ad Words", "Google Local Services", "Google Reviews", "Google Search/Ratings", "HubSpot", "Marvin Lead", "Personal Lead", "Previous Customer", "RC Website", "Referral", "REFERRAL PARTNER - Personal Leads", "Trucks (Wraps on trucks)"],
+        july: [1312.06, 0, 3773.61, 0, 0, 0, 7505.82, 3932.04, 0, 19341.33, 3047.49, 0, 2103.66, 17222.37, 0],
+        august: [0, 0, 0, 0, 667.41, 0, 25966.30, 0, 3702.63, 4435.93, 1802.22, 0, 891.72, 3760.47, 0]
+      }
+    };
+
+    // Create charts
+    let charts = {};
+
+    function initializeDashboard() {
+      document.getElementById('currentDate').textContent = new Date().toLocaleDateString();
+      renderCharts();
+    }
+
+    function renderCharts() {
+      createLeadSourcesChart();
+      createAppointmentsByStateChart();
+      createClosedLeadsByStateChart();
+      createHubspotAppointmentsChart();
+      createHubspotClosedLeadsChart();
+      createLeadAppointmentRatioChart();
+      createLeadClosedRatioChart();
+      createRevenuePerLeadSourceChart();
+      createProfitabilityPerLeadSourceChart();
+    }
+
+    function createLeadSourcesChart() {
+      const ctx = document.getElementById('leadSourcesChart').getContext('2d');
+      if (charts.leadSources) charts.leadSources.destroy();
+      charts.leadSources = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.leadSourcesMoM.labels,
+          datasets: [
+            { label: 'July 2025', data: data.leadSourcesMoM.july, backgroundColor: '#3B82F6' },
+            { label: 'August 2025', data: data.leadSourcesMoM.august, backgroundColor: '#EF4444' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Number of Leads' },
+              ticks: { callback: val => val.toLocaleString() }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const value = context.parsed.y;
+                  return `${context.dataset.label}: ${value.toLocaleString()}`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function createAppointmentsByStateChart() {
+      const ctx = document.getElementById('appointmentsByStateChart').getContext('2d');
+      if (charts.appointmentsByState) charts.appointmentsByState.destroy();
+      charts.appointmentsByState = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.appointmentsByState.labels,
+          datasets: [
+            { label: 'July 2025', data: data.appointmentsByState.july, backgroundColor: '#3B82F6' },
+            { label: 'August 2025', data: data.appointmentsByState.august, backgroundColor: '#EF4444' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Number of Appointments' },
+              ticks: { callback: val => val.toLocaleString() }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const value = context.parsed.y;
+                  return `${context.dataset.label}: ${value.toLocaleString()}`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function createClosedLeadsByStateChart() {
+      const ctx = document.getElementById('closedLeadsByStateChart').getContext('2d');
+      if (charts.closedLeadsByState) charts.closedLeadsByState.destroy();
+      charts.closedLeadsByState = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.closedLeadsByState.labels,
+          datasets: [
+            { label: 'July 2025', data: data.closedLeadsByState.july, backgroundColor: '#3B82F6' },
+            { label: 'August 2025', data: data.closedLeadsByState.august, backgroundColor: '#EF4444' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Number of Closed Leads' },
+              ticks: { callback: val => val.toLocaleString() }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const value = context.parsed.y;
+                  return `${context.dataset.label}: ${value.toLocaleString()}`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function createHubspotAppointmentsChart() {
+      const ctx = document.getElementById('hubspotAppointmentsChart').getContext('2d');
+      if (charts.hubspotAppointments) charts.hubspotAppointments.destroy();
+      charts.hubspotAppointments = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.hubspotAppointments.labels,
+          datasets: [
+            { label: 'July 2025', data: data.hubspotAppointments.july, backgroundColor: '#3B82F6' },
+            { label: 'August 2025', data: data.hubspotAppointments.august, backgroundColor: '#EF4444' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Number of Appointments' },
+              ticks: { callback: val => val.toLocaleString() }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const value = context.parsed.y;
+                  return `${context.dataset.label}: ${value.toLocaleString()}`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function createHubspotClosedLeadsChart() {
+      const ctx = document.getElementById('hubspotClosedLeadsChart').getContext('2d');
+      if (charts.hubspotClosedLeads) charts.hubspotClosedLeads.destroy();
+      charts.hubspotClosedLeads = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.hubspotClosedLeads.labels,
+          datasets: [
+            { label: 'July 2025', data: data.hubspotClosedLeads.july, backgroundColor: '#3B82F6' },
+            { label: 'August 2025', data: data.hubspotClosedLeads.august, backgroundColor: '#EF4444' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Number of Closed Leads' },
+              ticks: { callback: val => val.toLocaleString() }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const value = context.parsed.y;
+                  return `${context.dataset.label}: ${value.toLocaleString()}`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function createLeadAppointmentRatioChart() {
+      const ctx = document.getElementById('leadAppointmentRatioChart').getContext('2d');
+      if (charts.leadAppointmentRatio) charts.leadAppointmentRatio.destroy();
+      charts.leadAppointmentRatio = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.leadAppointmentRatioMoM.labels,
+          datasets: [
+            { label: 'July 2025', data: data.leadAppointmentRatioMoM.july, backgroundColor: '#3B82F6' },
+            { label: 'August 2025', data: data.leadAppointmentRatioMoM.august, backgroundColor: '#EF4444' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Conversion Rate (%)' },
+              ticks: { callback: val => val + '%' }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const value = context.parsed.y;
+                  return `${context.dataset.label}: ${value}%`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function createLeadClosedRatioChart() {
+      const ctx = document.getElementById('leadClosedRatioChart').getContext('2d');
+      if (charts.leadClosedRatio) charts.leadClosedRatio.destroy();
+      charts.leadClosedRatio = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.leadClosedRatioMoM.labels,
+          datasets: [
+            { label: 'July 2025', data: data.leadClosedRatioMoM.july, backgroundColor: '#3B82F6' },
+            { label: 'August 2025', data: data.leadClosedRatioMoM.august, backgroundColor: '#EF4444' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Conversion Rate (%)' },
+              ticks: { callback: val => val + '%' }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const value = context.parsed.y;
+                  return `${context.dataset.label}: ${value}%`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function createRevenuePerLeadSourceChart() {
+      const ctx = document.getElementById('revenuePerLeadSourceChart').getContext('2d');
+      if (charts.revenuePerLeadSource) charts.revenuePerLeadSource.destroy();
+      charts.revenuePerLeadSource = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.revenuePerLeadSource.labels,
+          datasets: [
+            { label: 'July 2025 Revenue', data: data.revenuePerLeadSource.july, backgroundColor: '#3B82F6' },
+            { label: 'August 2025 Revenue', data: data.revenuePerLeadSource.august, backgroundColor: '#EF4444' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Revenue ($)' },
+              ticks: { callback: val => '$' + val.toLocaleString() }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const value = context.parsed.y;
+                  return `${context.dataset.label}: $${value.toLocaleString()}`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function createProfitabilityPerLeadSourceChart() {
+      const ctx = document.getElementById('profitabilityPerLeadSourceChart').getContext('2d');
+      if (charts.profitabilityPerLeadSource) charts.profitabilityPerLeadSource.destroy();
+      charts.profitabilityPerLeadSource = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.profitabilityPerLeadSource.labels,
+          datasets: [
+            { label: 'July 2025 Profit', data: data.profitabilityPerLeadSource.july, backgroundColor: '#10B981' },
+            { label: 'August 2025 Profit', data: data.profitabilityPerLeadSource.august, backgroundColor: '#059669' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Profit ($)' },
+              ticks: { callback: val => '$' + val.toLocaleString() }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const value = context.parsed.y;
+                  return `${context.dataset.label}: $${value.toLocaleString()}`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', initializeDashboard);
+  </script>
+</body>
+</html>

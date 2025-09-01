@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RoofCrafters Roofing, LLC - Customer Relationship Management Metrics</title>
+  <!-- Reliable Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --roofcrafters-red: #B91C1C;
+      --roofcrafters-white: #FFFFFF;
+      --text-dark: #1F2937;
+      --text-light: #6B7280;
+      --border-color: #E5E7EB;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+      --border-radius: 12px;
+      --transition: all 0.3s ease;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
+      color: var(--text-dark);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      background: var(--roofcrafters-red);
+      color: white;
+      box-shadow: var(--shadow-sm);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .company-info h1 {
+      color: white;
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+    .company-info p {
+      color: rgba(255,255,255,0.8);
+      font-size: 0.9rem;
+    }
+    .dashboard-title {
+      text-align: right;
+    }
+    .dashboard-title h2 {
+      color: white;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+    .dashboard-title p {
+      color: rgba(255,255,255,0.8);
+      font-size: 0.9rem;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      flex: 1;
+    }
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .metric-card {
+      background: var(--roofcrafters-white);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-md);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+    }
+    .metric-card.total-card {
+      background: linear-gradient(135deg, #F8FAFC 0%, #EBF4FF 100%);
+      border: 2px solid var(--roofcrafters-red);
+      box-shadow: 0 8px 25px rgba(185,28,28,0.15);
+    }
+    .metric-card.total-card .metric-title {
+      font-weight: 700;
+      color: #1F2937;
+    }
+    .metric-card.total-card .metric-value {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: #1F2937;
+    }
+    .metric-card.total-card .metric-change {
+      color: #1F2937;
+    }
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, var(--roofcrafters-red) 0%, var(--roofcrafters-red) 100%);
+    }
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .metric-title {
+      color: var(--text-light);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .metric-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: white;
+    }
+    .metric-value {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 0.5rem;
+    }
+    .metric-change {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .change-positive { color: #10B981; }
+    .change-negative { color: #EF4444; }
+    .change-neutral { color: var(--text-light); }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    .chart-card {
+      background: var(--roofcrafters-white);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-md);
+      transition: var(--transition);
+    }
+    .chart-header {
+      margin-bottom: 1.5rem;
+    }
+    .chart-title {
+      color: var(--text-dark);
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .chart-subtitle {
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+    .chart-container {
+      position: relative;
+      height: 380px;
+    }
+
+    .insights-section {
+      background: var(--roofcrafters-white);
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 2rem;
+    }
+    .section-title {
+      color: var(--text-dark);
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .insight-card {
+      padding: 1.5rem;
+      border-radius: 8px;
+      border-left: 4px solid;
+    }
+    .insight-critical { background: #FEF2F2; border-left-color: var(--roofcrafters-red); }
+    .insight-positive { background: #ECFDF5; border-left-color: #10B981; }
+    .insight-warning { background: #FFFBEB; border-left-color: #F59E0B; }
+    .insight-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+    .insight-critical .insight-title { color: #991B1B; }
+    .insight-positive .insight-title { color: #065F46; }
+    .insight-warning .insight-title { color: #92400E; }
+    .insight-text {
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .footer {
+      background: #1F2937;
+      color: white;
+      text-align: center;
+      padding: 2rem 0;
+      margin-top: auto;
+    }
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
+      .container {
+        padding: 1rem;
+      }
+      .chart-container {
+        height: 300px;
+      }
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+      .insights-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <div class="company-info">
+        <h1>RoofCrafters Roofing, LLC</h1>
+        <p>Interactive Analytics Dashboard</p>
+      </div>
+      <div class="dashboard-title">
+        <h2>Customer Relationship Management Metrics</h2>
+        <p>July - August 2025 Performance Analysis</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Charts -->
+    <section class="charts-grid">
+      <!-- Top 10 Customers with Recurring Jobs -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Top 10 Customers with Recurring Jobs - 2025</div>
+          <div class="chart-subtitle">Recurring job frequency</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="recurringJobsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Top 10 Customers by Contract Totals -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Top 10 Customers by Contract Totals - 2025</div>
+          <div class="chart-subtitle">Contract value ranking</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="contractTotalsChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Full Width Referral Chart -->
+    <section class="charts-grid">
+      <div class="chart-card" style="grid-column: span 2;">
+        <div class="chart-header">
+          <div class="chart-title">Referral Generation Rates - 2025</div>
+          <div class="chart-subtitle">Lead source distribution</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="referralRatesChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scorecards below Referral Chart -->
+    <section class="metrics-grid">
+      <div class="metric-card total-card">
+        <div class="metric-header">
+          <div class="metric-title">Personal Leads + Referral</div>
+          <div class="metric-icon" style="background:#10B981">📊</div>
+        </div>
+        <div class="metric-value">24.40%</div>
+        <div class="metric-change change-neutral">As of August 2025</div>
+      </div>
+      <div class="metric-card total-card">
+        <div class="metric-header">
+          <div class="metric-title">REFERRAL PARTNER - Personal Leads</div>
+          <div class="metric-icon" style="background:#F59E0B">📅</div>
+        </div>
+        <div class="metric-value">17.29%</div>
+        <div class="metric-change change-neutral">As of August 2025</div>
+      </div>
+    </section>
+
+    <!-- Full-Width Insights -->
+    <section class="insights-section">
+      <div class="section-title">💡 Key Performance Insights</div>
+      <div class="insights-grid">
+        <div class="insight-card insight-positive">
+          <div class="insight-title">🚀 Brett Remler: Highest Recurring Activity</div>
+          <div class="insight-text">Brett Remler leads with 34 recurring jobs, indicating strong customer loyalty and retention.</div>
+        </div>
+        <div class="insight-card insight-positive">
+          <div class="insight-title">💰 Karen Kim: Top Contract Value</div>
+          <div class="insight-text">Karen Kim has the highest contract total at $103,512.59, demonstrating high-value client acquisition.</div>
+        </div>
+        <div class="insight-card insight-warning">
+          <div class="insight-title">⚠️ Personal Leads: Dominant Source</div>
+          <div class="insight-text">Personal leads account for 296 out of 1336 total leads (22.1%), highlighting a strong word-of-mouth network.</div>
+        </div>
+        <div class="insight-card insight-warning">
+          <div class="insight-title">⚠️ Google Search/Ratings: Major Lead Source</div>
+          <div class="insight-text">Google Search/Ratings generated 379 leads (28.4%), suggesting strong SEO and online presence.</div>
+        </div>
+        <div class="insight-card insight-critical">
+          <div class="insight-title">❌ Low Referral Partner Contribution</div>
+          <div class="insight-text">REFERRAL PARTNER - Personal Leads contribute only 17.29% of referrals, indicating potential underutilization of partner networks.</div>
+        </div>
+        <div class="insight-card insight-positive">
+          <div class="insight-title">📈 High Referral Generation Rate</div>
+          <div class="insight-text">The overall referral generation rate is 24.40%, showing effective customer advocacy and satisfaction.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <p>&copy; 2025 RoofCrafters Roofing, LLC. All rights reserved.</p>
+      <p>Dashboard generated on <span id="currentDate"></span> | Data Period: January - August 2025</p>
+    </div>
+  </footer>
+
+  <script>
+    // Data from CSV
+    const recurringJobsData = [
+      { name: "Brett Remler", count: 34 },
+      { name: "Matt Cavalier", count: 18 },
+      { name: "Jessica Victoria", count: 11 },
+      { name: "Robin Lance Realty", count: 8 },
+      { name: "Wayne Maciura", count: 7 },
+      { name: "Amanda Page", count: 6 },
+      { name: "Christian Zecher", count: 6 },
+      { name: "Joe Sanders", count: 5 },
+      { name: "Pivotal Restoration", count: 5 },
+      { name: "Ashton Taylor", count: 4 }
+    ];
+
+    const contractTotalsData = [
+      { name: "Karen Kim", total: 103512.59 },
+      { name: "Brett Remler", total: 89188.65 },
+      { name: "Sandi Downes", total: 59688.92 },
+      { name: "Walter Owens", total: 35180.78 },
+      { name: "Lari Gooding", total: 32032.60 },
+      { name: "Christina Bunn", total: 27329.64 },
+      { name: "Matt Cavalier", total: 24956.53 },
+      { name: "Alexandra Irwin", total: 22311.95 },
+      { name: "Peter Wiley", total: 22035.62 },
+      { name: "Pam Cole", total: 20465.80 }
+    ];
+
+    const referralRatesData = [
+      { source: "Google Search/Ratings", count: 379 },
+      { source: "Personal Lead", count: 296 },
+      { source: "REFERRAL PARTNER - Personal Leads", count: 231 },
+      { source: "HubSpot", count: 132 },
+      { source: "GAF", count: 31 },
+      { source: "Angie's List", count: 15 },
+      { source: "Previous Customer", count: 150 },
+      { source: "Google Ad Words", count: 14 },
+      { source: "Google Local Services", count: 7 },
+      { source: "Google Reviews", count: 8 },
+      { source: "Marvin Lead", count: 19 },
+      { source: "Facebook", count: 5 },
+      { source: "BBB", count: 3 },
+      { source: "Trucks (Wraps on trucks)", count: 3 },
+      { source: "Yelp", count: 1 },
+      { source: "Door Knocking", count: 1 },
+      { source: "Next Door", count: 1 },
+      { source: "Saw Job", count: 1 },
+      { source: "RC Website", count: 7 },
+      { source: "Other", count: 2 },
+      { source: "Referral", count: 30 }
+    ];
+
+    let charts = {};
+
+    // Initialize Dashboard
+    function initializeDashboard() {
+      document.getElementById('currentDate').textContent = new Date().toLocaleDateString();
+      renderCharts();
+    }
+
+    function renderCharts() {
+      createRecurringJobsChart();
+      createContractTotalsChart();
+      createReferralRatesChart();
+    }
+
+    function createRecurringJobsChart() {
+      const ctx = document.getElementById('recurringJobsChart').getContext('2d');
+      charts.recurringJobs = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: recurringJobsData.map(d => d.name),
+          datasets: [{
+            label: 'Count',
+            data: recurringJobsData.map(d => d.count),
+            backgroundColor: '#10B981'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Number of Recurring Jobs' }
+            }
+          }
+        }
+      });
+    }
+
+    function createContractTotalsChart() {
+      const ctx = document.getElementById('contractTotalsChart').getContext('2d');
+      charts.contractTotals = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: contractTotalsData.map(d => d.name),
+          datasets: [{
+            label: 'Contract Total ($)',
+            data: contractTotalsData.map(d => d.total),
+            backgroundColor: '#EF4444'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Contract Total ($)' },
+              ticks: { callback: val => '$' + val.toLocaleString() }
+            }
+          }
+        }
+      });
+    }
+
+    function createReferralRatesChart() {
+      const ctx = document.getElementById('referralRatesChart').getContext('2d');
+      charts.referralRates = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: referralRatesData.map(d => d.source),
+          datasets: [{
+            label: 'Count',
+            data: referralRatesData.map(d => d.count),
+            backgroundColor: '#F59E0B'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          scales: {
+            x: {
+              beginAtZero: true,
+              title: { display: true, text: 'Number of Leads' }
+            }
+          }
+        }
+      });
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', initializeDashboard);
+  </script>
+</body>
+</html>
